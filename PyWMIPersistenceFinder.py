@@ -77,7 +77,7 @@
 #   SOFTWARE.
 #
 
-from __future__ import print_function
+
 import sys
 import re
 import string
@@ -90,7 +90,7 @@ def main():
     print("\n    Enumerating FilterToConsumerBindings...")
 
     #Read objects.data 4 lines at a time to look for bindings
-    objects_file = open(sys.argv[1], "rb")
+    objects_file = open(sys.argv[1], "r", errors='ignore')
     current_line = objects_file.readline()
     lines_list = [current_line]
     current_line = objects_file.readline()
@@ -147,7 +147,7 @@ def main():
           .format(len(bindings_dict)))
 
     # Read objects.data 4 lines at a time to look for filters and consumers
-    objects_file = open(sys.argv[1], "rb")
+    objects_file = open(sys.argv[1], "r", errors='ignore')
     current_line = objects_file.readline()
     lines_list = [current_line]
     current_line = objects_file.readline()
@@ -162,7 +162,7 @@ def main():
 
         # Check each potential page for the consumers we are looking for
         if "EventConsumer" in potential_page:
-            for event_consumer_name, event_consumer_details in consumer_dict.iteritems():
+            for event_consumer_name, event_consumer_details in consumer_dict.items():
                 # Can't precompile regex because it is dynamically created with each consumer name
                 if "CommandLineEventConsumer" in potential_page:
                     consumer_mo = re.compile("(CommandLineEventConsumer)(\x00\x00)(.*?)(\x00)(.*?)"
@@ -173,8 +173,8 @@ def main():
                         noisy_string = consumer_match.groups()[2]
                         consumer_details = "\n\t\tConsumer Type: {}\n\t\tArguments:     {}".format(
                             consumer_match.groups()[0],
-                            filter(lambda event_consumer_name: event_consumer_name in
-                                   PRINTABLE_CHARS, noisy_string))
+                            [event_consumer_name for event_consumer_name in noisy_string if event_consumer_name in
+                                   PRINTABLE_CHARS])
                         if consumer_match.groups()[5]:
                             consumer_details += "\n\t\tConsumer Name: {}".format(consumer_match.groups()[5])
                         if consumer_match.groups()[7]:
@@ -195,7 +195,7 @@ def main():
                         consumer_dict[event_consumer_name].add(consumer_details)
 
         # Check each potential page for the filters we are looking for
-        for event_filter_name, event_filter_details in filter_dict.iteritems():
+        for event_filter_name, event_filter_details in filter_dict.items():
             if event_filter_name in potential_page:
                 # Can't precompile regex because it is dynamically created with each filter name
                 filter_mo = re.compile(
@@ -214,7 +214,7 @@ def main():
     
     # Print results to stdout. CSV will be in future version.
     print("\n    Bindings:\n")
-    for binding_name, binding_details in bindings_dict.iteritems():
+    for binding_name, binding_details in bindings_dict.items():
         if (
                 "BVTConsumer-BVTFilter" in binding_name or
                 "SCM Event Log Consumer-SCM Event Log Filter" in binding_name):
